@@ -125,8 +125,8 @@ class DiseaseModelBase(torch.nn.Module):
         else:
             return v_coord, v_score, d_coord, d_score
 
-    def forward(self, *args, **kwargs):
+    def forward(self, args):
         if self.training:
-            return self._train(*args, **kwargs)
+            return self._train(*args)
         else:
-            return self._inference(*args, **kwargs)
+            return self._inference(args, True)

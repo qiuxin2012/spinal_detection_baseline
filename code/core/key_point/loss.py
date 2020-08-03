@@ -2,8 +2,8 @@ import torch
 
 
 class NullLoss:
-    def __call__(self, x, *args):
-        return x.mean()
+    def __call__(self, x, y):
+        return x[0].mean()
 
 
 class KeyPointBCELoss:

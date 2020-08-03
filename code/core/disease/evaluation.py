@@ -68,7 +68,7 @@ class Evaluator:
         self.module.eval()
         output = []
         for study in self.studies.values():
-            pred = self.module(study, to_dict=True)
+            pred = self.module(study)
             output.append(pred)
         return output
 

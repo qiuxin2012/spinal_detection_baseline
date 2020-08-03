@@ -3,9 +3,10 @@ import sys
 import time
 
 import torch
+from torch.utils.data import DataLoader
 from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 
-from code.core.disease.data_loader import DisDataLoader
+from code.core.disease.data_loader import DisDataSet
 from code.core.disease.evaluation import Evaluator
 from code.core.disease.model import DiseaseModelBase
 from code.core.key_point import KeyPointModel, NullLoss
@@ -31,14 +32,14 @@ if __name__ == '__main__':
     backbone = resnet_fpn_backbone('resnet50', True)
     kp_model = KeyPointModel(backbone)
     dis_model = DiseaseModelBase(kp_model, sagittal_size=(512, 512))
-    dis_model.cuda()
     print(dis_model)
 
     # 设定训练参数
-    train_dataloader = DisDataLoader(
-        train_studies, train_annotation, batch_size=8, num_workers=3, num_rep=10, prob_rotate=1, max_angel=180,
-        sagittal_size=dis_model.sagittal_size, transverse_size=dis_model.sagittal_size, k_nearest=0
-    )
+    train_dataset = DisDataSet(studies=train_studies, annotations=train_annotation, sagittal_size=dis_model.sagittal_size,
+                               transverse_size=dis_model.sagittal_size, k_nearest=0, prob_rotate=1,
+                               max_angel=180, num_rep=10, max_dist=8)
+    train_dataloader = DataLoader(train_dataset, batch_size=32, shuffle=True, num_workers=3,
+                        pin_memory=False, collate_fn=train_dataset.collate_fn)
 
     valid_evaluator = Evaluator(
         dis_model, valid_studies, 'data/lumbar_train51_annotation.json', num_rep=20, max_dist=6,
@@ -46,7 +47,7 @@ if __name__ == '__main__':
 
     step_per_batch = len(train_dataloader)
     optimizer = torch.optim.AdamW(dis_model.parameters(), lr=1e-5)
-    max_step = 1 * step_per_batch
+    max_step = 2 * step_per_batch
     fit_result = torch_utils.fit(
         dis_model,
         train_data=train_dataloader,
@@ -66,7 +67,7 @@ if __name__ == '__main__':
 
     result = []
     for study in testA_studies.values():
-        result.append(dis_model.eval()(study, True))
+        result.append(dis_model.eval()(study))
 
     with open('predictions/baseline.json', 'w') as file:
         json.dump(result, file)
