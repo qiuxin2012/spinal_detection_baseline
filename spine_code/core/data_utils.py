@@ -158,7 +158,7 @@ def resize(size: Tuple[int, int], image: Image.Image, spacing: torch.Tensor, *co
     spacing = spacing / ratio
     coords = [coord * ratio for coord in coords]
     image = tf.resize(image, size)
-    return image, spacing, *coords
+    return image, spacing, coords[0]
 
 
 def rotate_point(points: torch.Tensor, angel, center: torch.Tensor) -> torch.Tensor:
