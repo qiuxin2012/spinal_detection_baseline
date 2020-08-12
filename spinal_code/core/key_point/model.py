@@ -42,7 +42,7 @@ class KeyPointModel(torch.nn.Module):
         return images
 
     def cal_scores(self, images):
-        images = self._preprocess(images)
+        images = self._preprocess(images).to_mkldnn(torch.bfloat16)
         feature_pyramids = self.backbone(images)
         feature_maps = feature_pyramids['0']
         scores = self.fc(feature_maps)
