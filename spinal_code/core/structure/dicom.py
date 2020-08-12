@@ -114,7 +114,7 @@ class DICOM:
             array = sitk.GetArrayFromImage(image)[0]
             # rescale the range of image array and cast it to np.uint8.
             # though SimpleITK has similar method, it may crash with python 3.7 and ubuntu 20.04
-            # and the reason is unknown right now. thus, i choose to write my own cast code.
+            # and the reason is unknown right now. thus, i choose to write my own cast spinal_code.
             array = array.astype(np.float64)
             array = (array - array.min()) * (255 / (array.max() - array.min()))
             array = array.astype(np.uint8)
