@@ -45,6 +45,15 @@ if __name__ == '__main__':
                                    max_angel=180, num_rep=10, max_dist=8)
         return DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=3,
                           pin_memory=False, collate_fn=train_dataset.collate_fn)
+        
+    valid_studies, valid_annotation, valid_counter = construct_studies(
+            'data/train/', 'data/lumbar_train51_annotation.json', multiprocessing=False)
+    valid_evaluator = Evaluator(
+        dis_model, valid_studies, 'data/lumbar_train51_annotation.json', num_rep=20, max_dist=6,
+    )
+    metrics_values = valid_evaluator(dis_model, None, valid_evaluator.metric)
+    for a, b in metrics_values:
+        print('valid {}: {}'.format(a, b))
 
     az_model = TorchModel.from_pytorch(dis_model)
     zoo_loss = TorchLoss.from_pytorch(NullLoss()) 
@@ -55,10 +64,8 @@ if __name__ == '__main__':
     estimator.train_minibatch(train_featureset, zoo_loss, end_trigger=MaxEpoch(1),
                               checkpoint_trigger=EveryEpoch())
 
-    valid_studies, valid_annotation, valid_counter = construct_studies(
-            'data/train/', 'data/lumbar_train51_annotation.json', multiprocessing=False)
     valid_evaluator = Evaluator(
-        dis_model, valid_studies, 'data/lumbar_train51_annotation.json', num_rep=20, max_dist=6,
+        az_model.to_pytorch(), valid_studies, 'data/lumbar_train51_annotation.json', num_rep=20, max_dist=6,
     )
     metrics_values = valid_evaluator(az_model.to_pytorch(), None, valid_evaluator.metric)
     for a, b in metrics_values:
