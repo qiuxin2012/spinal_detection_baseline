@@ -26,6 +26,8 @@ from zoo.ray import RayContext
 if __name__ == '__main__':
     
     parser = argparse.ArgumentParser()
+    parser.add_argument('--data', '-d', type=str, required=True,
+                help='The directory of the data.')
     parser.add_argument('--num_workers', '-n', type=int, default=1,
                 help="The number of Horovod workers launched for distributed training.")
     parser.add_argument('--worker_cores', '-c', type=int, default=4,
@@ -56,7 +58,7 @@ if __name__ == '__main__':
 
     def train_dataloader():
         train_studies, train_annotation, train_counter = construct_studies(
-            '/home/cpx/gavingu/ali/zoo/spinal_detection_baseline/data/lumbar_train150', '/home/cpx/gavingu/ali/zoo/spinal_detection_baseline/data/lumbar_train150_annotation.json', multiprocessing=False)
+            opt.data + '/lumbar_train150', opt.data + '/lumbar_train150_annotation.json', multiprocessing=False)
 
         train_images = {}
         for study_uid, study in train_studies.items():
@@ -69,9 +71,9 @@ if __name__ == '__main__':
                           pin_memory=False, collate_fn=train_dataset.collate_fn)
         
     valid_studies, valid_annotation, valid_counter = construct_studies(
-            '/home/cpx/gavingu/ali/zoo/spinal_detection_baseline/data/train/', '/home/cpx/gavingu/ali/zoo/spinal_detection_baseline/data/lumbar_train51_annotation.json', multiprocessing=False)
+            opt.data + '/train/', opt.data + '/lumbar_train51_annotation.json', multiprocessing=False)
     valid_evaluator = Evaluator(
-        dis_model, valid_studies, '/home/cpx/gavingu/ali/zoo/spinal_detection_baseline/data/lumbar_train51_annotation.json', num_rep=20, max_dist=6,
+        dis_model, valid_studies, opt.data + '/lumbar_train51_annotation.json', num_rep=20, max_dist=6,
     )
     metrics_values = valid_evaluator(dis_model, None, valid_evaluator.metric)
     for a, b in metrics_values:
@@ -87,20 +89,20 @@ if __name__ == '__main__':
                               checkpoint_trigger=EveryEpoch())
 
     valid_evaluator = Evaluator(
-        az_model.to_pytorch(), valid_studies, '/home/cpx/gavingu/ali/zoo/spinal_detection_baseline/data/lumbar_train51_annotation.json', num_rep=20, max_dist=6,
+        az_model.to_pytorch(), valid_studies, opt.data + '/lumbar_train51_annotation.json', num_rep=20, max_dist=6,
     )
     metrics_values = valid_evaluator(az_model.to_pytorch(), None, valid_evaluator.metric)
     for a, b in metrics_values:
         print('valid {}: {}'.format(a, b))
 
     # 预测
-    testA_studies = construct_studies('/home/cpx/gavingu/ali/zoo/spinal_detection_baseline/data/lumbar_testA50/', multiprocessing=False)
+    testA_studies = construct_studies(opt.data + '/lumbar_testA50/', multiprocessing=False)
 
     result = []
     for study in testA_studies.values():
         result.append(az_model.to_pytorch().eval()(study))
 
-    with open('/home/cpx/gavingu/ali/zoo/spinal_detection_baseline/predictions/baseline.json', 'w') as file:
+    with open('predictions/baseline.json', 'w') as file:
         json.dump(result, file)
     print('task completed, {} seconds used'.format(time.time() - start_time))
     sc.stop()
