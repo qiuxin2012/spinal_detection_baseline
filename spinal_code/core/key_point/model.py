@@ -9,7 +9,7 @@ from ..data_utils import SPINAL_VERTEBRA_ID, SPINAL_DISC_ID
 class KeyPointModel(torch.nn.Module):
     def __init__(self, backbone: BackboneWithFPN, num_vertebra_points: int = len(SPINAL_VERTEBRA_ID),
                  num_disc_points: int = len(SPINAL_DISC_ID), pixel_mean=0.5, pixel_std=1,
-                 loss=KeyPointBCELoss(), spinal_model=SpinalModelBase()):
+                 loss=KeyPointBCELoss(), spinal_model=SpinalModelBase(), bf16=False):
         super().__init__()
         self.backbone = backbone
         self.num_vertebra_points = num_vertebra_points
@@ -19,6 +19,7 @@ class KeyPointModel(torch.nn.Module):
         self.register_buffer('pixel_std', torch.tensor(pixel_std))
         self.spinal_model = spinal_model
         self.loss = loss
+        self.bf16 = bf16
 
     @property
     def out_channels(self):
@@ -42,7 +43,10 @@ class KeyPointModel(torch.nn.Module):
         return images
 
     def cal_scores(self, images):
-        images = self._preprocess(images).to_mkldnn(torch.bfloat16)
+        if self.bf16:
+            images = self._preprocess(images).to_mkldnn(torch.bfloat16)
+        else:
+            images = self._preprocess(images)
         feature_pyramids = self.backbone(images)
         feature_maps = feature_pyramids['0']
         scores = self.fc(feature_maps)
