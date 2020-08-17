@@ -21,7 +21,6 @@ from zoo.pipeline.estimator import *
 from zoo.pipeline.api.keras.optimizers import Adam
 from bigdl.optim.optimizer import MaxEpoch, EveryEpoch
 from zoo.feature.common import FeatureSet
-from zoo.ray import RayContext
 
 if __name__ == '__main__':
     
