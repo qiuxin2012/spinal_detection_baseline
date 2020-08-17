@@ -49,7 +49,7 @@ if __name__ == '__main__':
             driver_memory="40g")
 
     backbone = resnet_fpn_backbone('resnet50', False)
-    kp_model = KeyPointModel(backbone)
+    kp_model = KeyPointModel(backbone, bf16=opt.use_bf16)
     dis_model = DiseaseModelBase(kp_model, sagittal_size=(512, 512))
     for name, parameter in dis_model.named_parameters():
         if 'layer_blocks.1' in name or 'layer_blocks.2' in name or 'layer_blocks.3' in name:
