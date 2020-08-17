@@ -86,7 +86,7 @@ if __name__ == '__main__':
     train_featureset = FeatureSet.pytorch_dataloader(train_dataloader, "", "")
     zooOptimizer = Adam(lr=1e-5)
     estimator = Estimator(az_model, optim_methods=zooOptimizer)
-    estimator.train_minibatch(train_featureset, zoo_loss, end_trigger=MaxEpoch(1),
+    estimator.train_minibatch(train_featureset, zoo_loss, end_trigger=MaxEpoch(opt.epochs),
                               checkpoint_trigger=EveryEpoch())
 
     valid_evaluator = Evaluator(
