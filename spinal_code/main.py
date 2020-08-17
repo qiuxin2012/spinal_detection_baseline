@@ -33,6 +33,8 @@ if __name__ == '__main__':
                 help='The number of cores allocated for each worker.')
     parser.add_argument('--epochs', '-e', type=int, default=20,
                 help='The number of epochs to train the model.')
+    parser.add_argument('--batch_size', '-b', type=int, default=8,
+                help='input batch size for training.')
     parser.add_argument('--master', '-m', type=str,
                 help='The Spark master address of a standalone cluster if any.')
     parser.add_argument('--use_bf16', type=bool, default=False,
@@ -66,7 +68,7 @@ if __name__ == '__main__':
         train_dataset = DisDataSet(studies=train_studies, annotations=train_annotation, sagittal_size=dis_model.sagittal_size,
                                    transverse_size=dis_model.sagittal_size, k_nearest=0, prob_rotate=1,
                                    max_angel=180, num_rep=10, max_dist=8)
-        return DataLoader(train_dataset, batch_size=8, shuffle=True, num_workers=3,
+        return DataLoader(train_dataset, batch_size=opt.batch_size, shuffle=True, num_workers=3,
                           pin_memory=False, collate_fn=train_dataset.collate_fn)
         
     valid_studies, valid_annotation, valid_counter = construct_studies(
@@ -84,7 +86,7 @@ if __name__ == '__main__':
     train_featureset = FeatureSet.pytorch_dataloader(train_dataloader, "", "")
     zooOptimizer = Adam(lr=1e-5)
     estimator = Estimator(az_model, optim_methods=zooOptimizer)
-    estimator.train_minibatch(train_featureset, zoo_loss, end_trigger=MaxEpoch(1),
+    estimator.train_minibatch(train_featureset, zoo_loss, end_trigger=MaxEpoch(opt.epochs),
                               checkpoint_trigger=EveryEpoch())
 
     valid_evaluator = Evaluator(
