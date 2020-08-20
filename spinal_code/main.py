@@ -37,7 +37,7 @@ if __name__ == '__main__':
                 help='input batch size for training.')
     parser.add_argument('--master', '-m', type=str,
                 help='The Spark master address of a standalone cluster if any.')
-    parser.add_argument('--use_bf16', type=bool, default=False,
+    parser.add_argument('--use_bf16', action='store_true', default=False,
                 help='Whether to use BF16 for model training if you are running on a server with BF16 support.')
 
     opt, _ = parser.parse_known_args()
