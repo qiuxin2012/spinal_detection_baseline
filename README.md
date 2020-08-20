@@ -7,7 +7,7 @@ This branch is the implementation of [spinal_detection_baseline](https://github.
 
 **Options:**
 * `-d` `--data` This is required. The directory of the data.
-* `-n` `--num_workers` The number of Horovod workers launched for distributed training. Default to be 1.
+* `-n` `--num_workers` The number of Spark workers launched for distributed training. Default to be 1.
 * `-c` `--worker_cores` The number of cores allocated for each worker. Default to be 4.
 * `-e` `--epochs` The number of epochs to train the model. Default to be 20.
 * `-b` `--batch_size` input batch size for training. Default to be 8.
